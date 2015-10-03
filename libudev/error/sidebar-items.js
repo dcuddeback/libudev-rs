@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ErrorKind","Types of errors that occur in libudev."]],"struct":[["Error","The error type for libudev operations."]],"type":[["Result","A `Result` type for libudev operations."]]});

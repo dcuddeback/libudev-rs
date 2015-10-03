@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Attribute","A device attribute."],["Attributes","Iterator over a device's attributes."],["Device","A structure that provides access to sysfs/kernel devices."],["Properties","Iterator over a device's properties."],["Property","A device property."]]});

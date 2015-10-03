@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Event` struct in crate `libudev`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Event">
+
+    <title>libudev::Event - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='index.html'>libudev</a></p><script>window.sidebarCurrent = {name: 'Event', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>libudev</a>::<wbr><a class='struct' href=''>Event</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-2796' class='srclink' href='../src/libudev/monitor.rs.html#171-173' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Event&lt;'a&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>An event that indicates a change in device state.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;'a&gt; <a class='struct' href='../libudev/struct.Event.html' title='libudev::Event'>Event</a>&lt;'a&gt;</code></h3><div class='impl-items'><h4 id='method.event_type' class='method'><code>fn <a href='#method.event_type' class='fnname'>event_type</a>(&amp;self) -&gt; <a class='enum' href='../libudev/enum.EventType.html' title='libudev::EventType'>EventType</a></code></h4>
+<div class='docblock'><p>Returns the <code>EventType</code> corresponding to this event.</p>
+</div><h4 id='method.sequence_number' class='method'><code>fn <a href='#method.sequence_number' class='fnname'>sequence_number</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a></code></h4>
+<div class='docblock'><p>Returns the event&#39;s sequence number.</p>
+</div><h4 id='method.device' class='method'><code>fn <a href='#method.device' class='fnname'>device</a>(&amp;self) -&gt; &amp;<a class='struct' href='../libudev/struct.Device.html' title='libudev::Device'>Device</a></code></h4>
+<div class='docblock'><p>Returns the device associated with this event.</p>
+</div></div><h2 id='deref-methods'>Methods from <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Deref.html' title='core::ops::Deref'>Deref</a>&lt;Target=<a class='struct' href='../libudev/struct.Device.html' title='libudev::Device'>Device</a>&lt;'a&gt;&gt;</h2><div class='impl-items'><h4 id='method.is_initialized' class='method'><code>fn <a href='#method.is_initialized' class='fnname'>is_initialized</a>(&amp;self) -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Checks whether the device has already been handled by udev.</p>
+
+<p>When a new device is connected to the system, udev initializes the device by setting
+permissions, renaming network devices, and possibly other initialization routines. This
+method returns <code>true</code> if udev has performed all of its work to initialize this device.</p>
+
+<p>This method only applies to devices with device nodes or network interfaces. All other
+devices return <code>true</code> by default.</p>
+</div><h4 id='method.devnum' class='method'><code>fn <a href='#method.devnum' class='fnname'>devnum</a>(&amp;self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='type' href='http://doc.rust-lang.org/nightly/libc/types/os/arch/posix88/type.dev_t.html' title='libc::types::os::arch::posix88::dev_t'>dev_t</a>&gt;</code></h4>
+<div class='docblock'><p>Gets the device&#39;s major/minor number.</p>
+</div><h4 id='method.syspath' class='method'><code>fn <a href='#method.syspath' class='fnname'>syspath</a>(&amp;self) -&gt; &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/path/struct.Path.html' title='std::path::Path'>Path</a></code></h4>
+<div class='docblock'><p>Returns the syspath of the device.</p>
+
+<p>The path is an absolute path and includes the sys mount point. For example, the syspath for
+<code>tty0</code> could be <code>/sys/devices/virtual/tty/tty0</code>, which includes the sys mount point,
+<code>/sys</code>.</p>
+</div><h4 id='method.devpath' class='method'><code>fn <a href='#method.devpath' class='fnname'>devpath</a>(&amp;self) -&gt; &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a></code></h4>
+<div class='docblock'><p>Returns the kernel devpath value of the device.</p>
+
+<p>The path does not contain the sys mount point, but does start with a <code>/</code>. For example, the
+devpath for <code>tty0</code> could be <code>/devices/virtual/tty/tty0</code>.</p>
+</div><h4 id='method.devnode' class='method'><code>fn <a href='#method.devnode' class='fnname'>devnode</a>(&amp;self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/path/struct.Path.html' title='std::path::Path'>Path</a>&gt;</code></h4>
+<div class='docblock'><p>Returns the path to the device node belonging to the device.</p>
+
+<p>The path is an absolute path and starts with the device directory. For example, the device
+node for <code>tty0</code> could be <code>/dev/tty0</code>.</p>
+</div><h4 id='method.subsystem' class='method'><code>fn <a href='#method.subsystem' class='fnname'>subsystem</a>(&amp;self) -&gt; &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a></code></h4>
+<div class='docblock'><p>Returns the subsystem name of the device.</p>
+
+<p>The subsystem name is a string that indicates which kernel subsystem the device belongs to.
+Examples of subsystem names are <code>tty</code>, <code>vtconsole</code>, <code>block</code>, <code>scsi</code>, and <code>net</code>.</p>
+</div><h4 id='method.sysname' class='method'><code>fn <a href='#method.sysname' class='fnname'>sysname</a>(&amp;self) -&gt; &amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a></code></h4>
+<div class='docblock'><p>Returns the kernel device name for the device.</p>
+
+<p>The sysname is a string that differentiates the device from others in the same subsystem.
+For example, <code>tty0</code> is the sysname for a TTY device that differentiates it from others,
+such as <code>tty1</code>.</p>
+</div><h4 id='method.sysnum' class='method'><code>fn <a href='#method.sysnum' class='fnname'>sysnum</a>(&amp;self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;</code></h4>
+<div class='docblock'><p>Returns the instance number of the device.</p>
+
+<p>The instance number is used to differentiate many devices of the same type. For example,
+<code>/dev/tty0</code> and <code>/dev/tty1</code> are both TTY devices but have instance numbers of 0 and 1,
+respectively.</p>
+
+<p>Some devices don&#39;t have instance numbers, such as <code>/dev/console</code>, in which case the method
+returns <code>None</code>.</p>
+</div><h4 id='method.devtype' class='method'><code>fn <a href='#method.devtype' class='fnname'>devtype</a>(&amp;self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;</code></h4>
+<div class='docblock'><p>Returns the devtype name of the device.</p>
+</div><h4 id='method.driver' class='method'><code>fn <a href='#method.driver' class='fnname'>driver</a>(&amp;self) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;</code></h4>
+<div class='docblock'><p>Returns the name of the kernel driver attached to the device.</p>
+</div><h4 id='method.property_value' class='method'><code>fn <a href='#method.property_value' class='fnname'>property_value</a>&lt;T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;&gt;(&amp;self, property: T) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;</code></h4>
+<div class='docblock'><p>Retreives the value of a device property.</p>
+</div><h4 id='method.attribute_value' class='method'><code>fn <a href='#method.attribute_value' class='fnname'>attribute_value</a>&lt;T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;&gt;(&amp;self, attribute: T) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;&amp;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;</code></h4>
+<div class='docblock'><p>Retreives the value of a device attribute.</p>
+</div><h4 id='method.set_attribute_value' class='method'><code>fn <a href='#method.set_attribute_value' class='fnname'>set_attribute_value</a>&lt;T: <a class='trait' href='http://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;, U: <a class='trait' href='http://doc.rust-lang.org/nightly/core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>&lt;<a class='struct' href='http://doc.rust-lang.org/nightly/std/ffi/os_str/struct.OsStr.html' title='std::ffi::os_str::OsStr'>OsStr</a>&gt;&gt;(&amp;mut self, attribute: T, value: U) -&gt; <a class='type' href='../libudev/type.Result.html' title='libudev::Result'>Result</a>&lt;<a href='http://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Sets the value of a device attribute.</p>
+</div><h4 id='method.properties' class='method'><code>fn <a href='#method.properties' class='fnname'>properties</a>(&amp;self) -&gt; <a class='struct' href='../libudev/struct.Properties.html' title='libudev::Properties'>Properties</a></code></h4>
+<div class='docblock'><p>Returns an iterator over the device&#39;s properties.</p>
+
+<h2 id="example" class='section-header'><a
+                           href="#example">Example</a></h2>
+<p>This example prints out all of a device&#39;s properties:</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>for</span> <span class='ident'>property</span> <span class='kw'>in</span> <span class='ident'>device</span>.<span class='ident'>properties</span>() {
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{:?} = {:?}&quot;</span>, <span class='ident'>property</span>.<span class='ident'>name</span>(), <span class='ident'>property</span>.<span class='ident'>value</span>());
+}
+</pre>
+</div><h4 id='method.attributes' class='method'><code>fn <a href='#method.attributes' class='fnname'>attributes</a>(&amp;self) -&gt; <a class='struct' href='../libudev/struct.Attributes.html' title='libudev::Attributes'>Attributes</a></code></h4>
+<div class='docblock'><p>Returns an iterator over the device&#39;s attributes.</p>
+
+<h2 id="example" class='section-header'><a
+                           href="#example">Example</a></h2>
+<p>This example prints out all of a device&#39;s attributes:</p>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>for</span> <span class='ident'>attribute</span> <span class='kw'>in</span> <span class='ident'>device</span>.<span class='ident'>attributes</span>() {
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{:?} = {:?}&quot;</span>, <span class='ident'>attribute</span>.<span class='ident'>name</span>(), <span class='ident'>attribute</span>.<span class='ident'>value</span>());
+}
+</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Deref.html' title='core::ops::Deref'>Deref</a> for <a class='struct' href='../libudev/struct.Event.html' title='libudev::Event'>Event</a>&lt;'a&gt;</code></h3><div class='docblock'><p>Provides access to the device associated with the event.</p>
+</div><div class='impl-items'><h4 id='assoc_type.Target' class='type'><code>type Target = <a class='struct' href='../libudev/struct.Device.html' title='libudev::Device'>Device</a>&lt;'a&gt;</code></h4>
+<h4 id='method.deref' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Deref.html#method.deref' class='fnname'>deref</a>(&amp;self) -&gt; &amp;<a class='struct' href='../libudev/struct.Device.html' title='libudev::Device'>Device</a>&lt;'a&gt;</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+            <p>
+                Search functions by type signature (e.g.
+                <code>vec -> usize</code>)
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "libudev";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Devices","Iterator over devices."],["Enumerator","An enumeration context."]]});
