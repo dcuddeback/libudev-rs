@@ -1,6 +1,11 @@
 extern crate libudev_sys as ffi;
 extern crate libc;
 
+pub enum DeviceType {
+    Char,
+    Block
+}
+
 pub use context::{Context};
 pub use device::{Device,Properties,Property,Attributes,Attribute};
 pub use enumerator::{Enumerator,Devices};
