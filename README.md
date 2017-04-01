@@ -1,8 +1,7 @@
 # Libudev
 This crate provides a safe wrapper around the native `libudev` library. It applies the RAII pattern
-and Rust lifetimes to ensure safe usage of all `libudev` functionality. The RAII pattern ensures
-that all acquired resources are released when they're no longer needed, and Rust lifetimes ensure
-that resources are released in a proper order.
+to ensure safe usage of all `libudev` functionality. The RAII pattern ensures that all acquired
+resources are released when they're no longer needed.
 
 * [Documentation](http://dcuddeback.github.io/libudev-rs/libudev/)
 

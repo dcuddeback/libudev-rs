@@ -12,20 +12,30 @@ pub use device::{Device};
 /// An Enumerator scans `/sys` for devices matching its filters. Filters are added to an Enumerator
 /// by calling its `match_*` and `nomatch_*` methods. After the filters are setup, the
 /// `scan_devices()` method finds devices in `/sys` that match the filters.
-pub struct Enumerator<'a> {
-    context: &'a Context,
+pub struct Enumerator {
+    context: Context,
     enumerator: *mut ::ffi::udev_enumerate
 }
 
-impl<'a> Drop for Enumerator<'a> {
+impl Clone for Enumerator {
+    /// Bumps reference count of `libudev` enumerator.
+    fn clone(&self) -> Self {
+        Enumerator {
+            context: self.context.clone(),
+            enumerator: unsafe { ::ffi::udev_enumerate_ref(self.enumerator) },
+        }
+    }
+}
+
+impl Drop for Enumerator {
     fn drop(&mut self) {
         unsafe { ::ffi::udev_enumerate_unref(self.enumerator) };
     }
 }
 
-impl<'a> Enumerator<'a> {
+impl Enumerator {
     /// Creates a new Enumerator.
-    pub fn new(context: &'a Context) -> ::Result<Self> {
+    pub fn new(context: Context) -> ::Result<Self> {
         let ptr = try_alloc!(unsafe { ::ffi::udev_enumerate_new(context.as_ptr()) });
 
         Ok(Enumerator {
@@ -132,7 +142,7 @@ impl<'a> Enumerator<'a> {
         }));
 
         Ok(Devices {
-            enumerator: self,
+            enumerator: self.clone(),
             entry: unsafe { ::ffi::udev_enumerate_get_list_entry(self.enumerator) }
         })
     }
@@ -140,15 +150,15 @@ impl<'a> Enumerator<'a> {
 
 
 /// Iterator over devices.
-pub struct Devices<'a> {
-    enumerator: &'a Enumerator<'a>,
+pub struct Devices {
+    enumerator: Enumerator,
     entry: *mut ::ffi::udev_list_entry
 }
 
-impl<'a> Iterator for Devices<'a> {
-    type Item = Device<'a>;
+impl Iterator for Devices {
+    type Item = Device;
 
-    fn next(&mut self) -> Option<Device<'a>> {
+    fn next(&mut self) -> Option<Device> {
         while !self.entry.is_null() {
             let syspath = Path::new(unsafe {
                 ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_name(self.entry))

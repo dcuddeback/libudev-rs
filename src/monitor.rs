@@ -15,12 +15,12 @@ use ::handle::prelude::*;
 /// A monitor communicates with the kernel over a socket. Filtering events is performed efficiently
 /// in the kernel, and only events that match the filters are received by the socket. Filters must
 /// be setup before listening for events.
-pub struct Monitor<'a> {
-    context: &'a Context,
+pub struct Monitor {
+    context: Context,
     monitor: *mut ::ffi::udev_monitor
 }
 
-impl<'a> Drop for Monitor<'a> {
+impl Drop for Monitor {
     fn drop(&mut self) {
         unsafe {
             ::ffi::udev_monitor_unref(self.monitor);
@@ -28,9 +28,9 @@ impl<'a> Drop for Monitor<'a> {
     }
 }
 
-impl<'a> Monitor<'a> {
+impl Monitor {
     /// Creates a new `Monitor`.
-    pub fn new(context: &'a Context) -> ::Result<Self> {
+    pub fn new(context: Context) -> ::Result<Self> {
         let name = CString::new("udev").unwrap();
 
         let ptr = try_alloc!(unsafe {
@@ -81,7 +81,7 @@ impl<'a> Monitor<'a> {
     /// Listens for events matching the current filters.
     ///
     /// This method consumes the `Monitor`.
-    pub fn listen(self) -> ::Result<MonitorSocket<'a>> {
+    pub fn listen(self) -> ::Result<MonitorSocket> {
         try!(::util::errno_to_result(unsafe {
             ::ffi::udev_monitor_enable_receiving(self.monitor)
         }));
@@ -99,12 +99,12 @@ impl<'a> Monitor<'a> {
 /// Monitors are initially setup to receive events from the kernel via a nonblocking socket. A
 /// variant of `poll()` should be used on the file descriptor returned by the `AsRawFd` trait to
 /// wait for new events.
-pub struct MonitorSocket<'a> {
-    inner: Monitor<'a>
+pub struct MonitorSocket {
+    inner: Monitor
 }
 
 /// Provides raw access to the monitor's socket.
-impl<'a> AsRawFd for MonitorSocket<'a> {
+impl AsRawFd for MonitorSocket {
     /// Returns the file descriptor of the monitor's socket.
     fn as_raw_fd(&self) -> RawFd {
         unsafe {
@@ -113,11 +113,11 @@ impl<'a> AsRawFd for MonitorSocket<'a> {
     }
 }
 
-impl<'a> MonitorSocket<'a> {
+impl MonitorSocket {
     /// Receives the next available event from the monitor.
     ///
     /// This method does not block. If no events are available, it returns `None` immediately.
-    pub fn receive_event<'b>(&'b mut self) -> Option<Event<'a>> {
+    pub fn receive_event(&mut self) -> Option<Event> {
         let device = unsafe {
             ::ffi::udev_monitor_receive_device(self.inner.monitor)
         };
@@ -126,7 +126,7 @@ impl<'a> MonitorSocket<'a> {
             None
         }
         else {
-            let device = ::device::new(self.inner.context, device);
+            let device = ::device::new(self.inner.context.clone(), device);
 
             Some(Event { device: device })
         }
@@ -168,20 +168,20 @@ impl fmt::Display for EventType {
 
 
 /// An event that indicates a change in device state.
-pub struct Event<'a> {
-    device: Device<'a>
+pub struct Event {
+    device: Device
 }
 
 /// Provides access to the device associated with the event.
-impl<'a> Deref for Event<'a> {
-    type Target = Device<'a>;
+impl Deref for Event {
+    type Target = Device;
 
-    fn deref(&self) -> &Device<'a> {
+    fn deref(&self) -> &Device {
         &self.device
     }
 }
 
-impl<'a> Event<'a> {
+impl Event {
     /// Returns the `EventType` corresponding to this event.
     pub fn event_type(&self) -> EventType {
         let value = match self.device.property_value("ACTION") {

@@ -8,6 +8,21 @@ pub struct Context {
     udev: *mut ::ffi::udev
 }
 
+impl Clone for Context {
+    /// Bumps reference count of `libudev` context.
+    fn clone(&self) -> Self {
+        Context {
+            udev: unsafe { ::ffi::udev_ref(self.udev) }
+        }
+    }
+}
+
+/// Drops copy of `Context`.
+///
+/// This crate uses `udev`'s reference counting to ensure correct order of releasing resources.
+/// When dropping a struct Rust will first call its `drop` and then `drop`s of its members. We use
+/// that to ensure entities depending on `libudev` context will be released before the context by
+/// holding copy of `Context` in struct representing that entity and implementing adequate `Drop`.
 impl Drop for Context {
     fn drop(&mut self) {
         unsafe {
@@ -42,6 +57,6 @@ impl Context {
             ::ffi::udev_device_new_from_syspath(self.udev, syspath.as_ptr())
         });
 
-        Ok(::device::new(self, ptr))
+        Ok(::device::new(self.clone(), ptr))
     }
 }

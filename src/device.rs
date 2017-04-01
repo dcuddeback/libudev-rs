@@ -9,7 +9,7 @@ use libc::{c_char,dev_t};
 use ::context::Context;
 use ::handle::*;
 
-pub fn new(context: &Context, device: *mut ::ffi::udev_device) -> Device {
+pub fn new(context: Context, device: *mut ::ffi::udev_device) -> Device {
     Device {
         _context: context,
         device: device,
@@ -17,12 +17,12 @@ pub fn new(context: &Context, device: *mut ::ffi::udev_device) -> Device {
 }
 
 /// A structure that provides access to sysfs/kernel devices.
-pub struct Device<'a> {
-    _context: &'a Context,
+pub struct Device {
+    _context: Context,
     device: *mut ::ffi::udev_device,
 }
 
-impl<'a> Drop for Device<'a> {
+impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
             ::ffi::udev_device_unref(self.device);
@@ -31,13 +31,13 @@ impl<'a> Drop for Device<'a> {
 }
 
 #[doc(hidden)]
-impl<'a> Handle<::ffi::udev_device> for Device<'a> {
+impl Handle<::ffi::udev_device> for Device {
     fn as_ptr(&self) -> *mut ::ffi::udev_device {
         self.device
     }
 }
 
-impl<'a> Device<'a> {
+impl Device {
     /// Checks whether the device has already been handled by udev.
     ///
     /// When a new device is connected to the system, udev initializes the device by setting
@@ -101,7 +101,7 @@ impl<'a> Device<'a> {
             }
 
             Some(Device {
-                _context: self._context,
+                _context: self._context.clone(),
                 device: ptr,
             })
         }
@@ -241,7 +241,7 @@ impl<'a> Device<'a> {
 
 /// Iterator over a device's properties.
 pub struct Properties<'a> {
-    _device: &'a Device<'a>,
+    _device: &'a Device,
     entry: *mut ::ffi::udev_list_entry
 }
 
@@ -291,7 +291,7 @@ impl<'a> Property<'a> {
 
 /// Iterator over a device's attributes.
 pub struct Attributes<'a> {
-    device: &'a Device<'a>,
+    device: &'a Device,
     entry: *mut ::ffi::udev_list_entry
 }
 
@@ -321,7 +321,7 @@ impl<'a> Iterator for Attributes<'a> {
 
 /// A device attribute.
 pub struct Attribute<'a> {
-    device: &'a Device<'a>,
+    device: &'a Device,
     name: &'a OsStr
 }
 
