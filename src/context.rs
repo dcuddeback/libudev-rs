@@ -8,7 +8,17 @@ pub struct Context {
     udev: *mut ::ffi::udev
 }
 
+impl Clone for Context {
+    /// Increments reference count of `libudev` context.
+    fn clone(&self) -> Self {
+        Context {
+            udev: unsafe { ::ffi::udev_ref(self.udev) },
+        }
+    }
+}
+
 impl Drop for Context {
+    /// Decrements reference count of `libudev` context.
     fn drop(&mut self) {
         unsafe {
             ::ffi::udev_unref(self.udev);
@@ -42,6 +52,6 @@ impl Context {
             ::ffi::udev_device_new_from_syspath(self.udev, syspath.as_ptr())
         });
 
-        Ok(::device::new(self, ptr))
+        Ok(::device::new(self.clone(), ptr))
     }
 }
