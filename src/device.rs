@@ -161,7 +161,7 @@ impl<'a> Device<'a> {
         ::util::ptr_to_os_str(unsafe { ::ffi::udev_device_get_driver(self.device) })
     }
 
-    /// Retreives the value of a device property.
+    /// Retrieves the value of a device property.
     pub fn property_value<T: AsRef<OsStr>>(&self, property: T) -> Option<&OsStr> {
         let prop = match ::util::os_str_to_cstring(property) {
             Ok(s) => s,
@@ -173,7 +173,7 @@ impl<'a> Device<'a> {
         })
     }
 
-    /// Retreives the value of a device attribute.
+    /// Retrieves the value of a device attribute.
     pub fn attribute_value<T: AsRef<OsStr>>(&self, attribute: T) -> Option<&OsStr> {
         let attr = match ::util::os_str_to_cstring(attribute) {
             Ok(s) => s,
