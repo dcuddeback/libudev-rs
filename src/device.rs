@@ -220,7 +220,10 @@ impl<'a> Device<'a> {
     ///
     /// ## Example
     ///
-    /// This example prints out all of a device's attributes:
+    /// This example prints out a subset of a device's attributes, the subset
+    /// that libudev returns via udev_device_get_sysattr_list_entry(). This
+    /// set is generally a proper subset of the attributes that can be obtained
+    /// or set by Device::attribute_value() or Device::set_attribute_value().
     ///
     /// ```no_run
     /// # use std::path::Path;
