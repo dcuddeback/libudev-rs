@@ -2,27 +2,26 @@ use std::str;
 
 use std::ffi::{CStr,OsStr};
 use std::path::Path;
+use std::ptr;
 use std::str::FromStr;
 
 use libc::{c_char,dev_t};
 
-use ::context::Context;
-use ::handle::*;
+use ::{Context, FromRawWithContext};
 
-pub fn new(context: &Context, device: *mut ::ffi::udev_device) -> Device {
-    Device {
-        _context: context,
-        device: device,
+/// A structure that provides access to sysfs/kernel devices.
+pub struct Device {
+    device: *mut ::ffi::udev_device,
+    context: Context,
+}
+
+impl Clone for Device {
+    fn clone(&self) -> Device {
+        unsafe { Device::from_raw(&self.context, ::ffi::udev_device_ref(self.device)) }
     }
 }
 
-/// A structure that provides access to sysfs/kernel devices.
-pub struct Device<'a> {
-    _context: &'a Context,
-    device: *mut ::ffi::udev_device,
-}
-
-impl<'a> Drop for Device<'a> {
+impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
             ::ffi::udev_device_unref(self.device);
@@ -30,14 +29,27 @@ impl<'a> Drop for Device<'a> {
     }
 }
 
-#[doc(hidden)]
-impl<'a> Handle<::ffi::udev_device> for Device<'a> {
-    fn as_ptr(&self) -> *mut ::ffi::udev_device {
-        self.device
+as_ffi!(Device, device, ::ffi::udev_device);
+
+impl FromRawWithContext<::ffi::udev_device> for Device {
+    unsafe fn from_raw(context: &Context, ptr: *mut ::ffi::udev_device) -> Device {
+        Device {
+            device: ptr,
+            context: context.clone(),
+        }
     }
 }
 
-impl<'a> Device<'a> {
+/// Device Type
+#[repr(u8)]
+pub enum DeviceType {
+    /// Block Device
+    BlockDevice = 'b' as u8,
+    /// Character Device
+    CharacterDevice = 'c' as u8,
+}
+
+impl Device {
     /// Checks whether the device has already been handled by udev.
     ///
     /// When a new device is connected to the system, udev initializes the device by setting
@@ -96,17 +108,34 @@ impl<'a> Device<'a> {
         let ptr = unsafe { ::ffi::udev_device_get_parent(self.device) };
 
         if !ptr.is_null() {
-            unsafe {
-                ::ffi::udev_device_ref(ptr);
-            }
-
-            Some(Device {
-                _context: self._context,
-                device: ptr,
-            })
-        }
-        else {
+            Some(unsafe { Device::from_raw(&self.context, ::ffi::udev_device_ref(ptr)) })
+        } else {
             None
+        }
+    }
+
+    /// Returns the parent of the device with the matching subsystem and devtype if any.
+    pub fn parent_with_subsystem(&self, subsystem: &Path) -> ::Result<Option<Device>> {
+        let subsystem = try!(::util::os_str_to_cstring(subsystem));
+        let ptr = unsafe { ::ffi::udev_device_get_parent_with_subsystem_devtype(self.device, subsystem.as_ptr(), ptr::null()) };
+
+        if !ptr.is_null() {
+            Ok(Some(unsafe { Device::from_raw(&self.context, ::ffi::udev_device_ref(ptr)) }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Returns the parent of the device with the matching subsystem and devtype if any.
+    pub fn parent_with_subsystem_devtype(&self, subsystem: &Path, devtype: &Path) -> ::Result<Option<Device>> {
+        let subsystem = try!(::util::os_str_to_cstring(subsystem));
+        let devtype = try!(::util::os_str_to_cstring(devtype));
+        let ptr = unsafe { ::ffi::udev_device_get_parent_with_subsystem_devtype(self.device, subsystem.as_ptr(), devtype.as_ptr()) };
+
+        if !ptr.is_null() {
+            Ok(Some(unsafe { Device::from_raw(&self.context, ::ffi::udev_device_ref(ptr)) }))
+        } else {
+            Ok(None)
         }
     }
 
@@ -209,10 +238,10 @@ impl<'a> Device<'a> {
     ///     println!("{:?} = {:?}", property.name(), property.value());
     /// }
     /// ```
-    pub fn properties(&self) -> Properties {
+    pub fn properties<'a>(&'a self) -> Properties<'a> {
         Properties {
+            entry: unsafe { ::ffi::udev_device_get_properties_list_entry(self.device) },
             _device: self,
-            entry: unsafe { ::ffi::udev_device_get_properties_list_entry(self.device) }
         }
     }
 
@@ -230,10 +259,10 @@ impl<'a> Device<'a> {
     ///     println!("{:?} = {:?}", attribute.name(), attribute.value());
     /// }
     /// ```
-    pub fn attributes(&self) -> Attributes {
+    pub fn attributes<'a>(&'a self) -> Attributes<'a> {
         Attributes {
+            entry: unsafe { ::ffi::udev_device_get_sysattr_list_entry(self.device) },
             device: self,
-            entry: unsafe { ::ffi::udev_device_get_sysattr_list_entry(self.device) }
         }
     }
 }
@@ -241,8 +270,8 @@ impl<'a> Device<'a> {
 
 /// Iterator over a device's properties.
 pub struct Properties<'a> {
-    _device: &'a Device<'a>,
-    entry: *mut ::ffi::udev_list_entry
+    entry: *mut ::ffi::udev_list_entry,
+    _device: &'a Device,
 }
 
 impl<'a> Iterator for Properties<'a> {
@@ -291,7 +320,7 @@ impl<'a> Property<'a> {
 
 /// Iterator over a device's attributes.
 pub struct Attributes<'a> {
-    device: &'a Device<'a>,
+    device: &'a Device,
     entry: *mut ::ffi::udev_list_entry
 }
 
@@ -321,7 +350,7 @@ impl<'a> Iterator for Attributes<'a> {
 
 /// A device attribute.
 pub struct Attribute<'a> {
-    device: &'a Device<'a>,
+    device: &'a Device,
     name: &'a OsStr
 }
 
