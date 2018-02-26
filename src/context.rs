@@ -16,6 +16,16 @@ impl Drop for Context {
     }
 }
 
+impl Clone for Context {
+    fn clone(&self) -> Self {
+        let udev = unsafe {
+            ::ffi::udev_ref(self.udev)
+        };
+
+        Self { udev }
+    }
+}
+
 #[doc(hidden)]
 impl Handle<::ffi::udev> for Context {
     fn as_ptr(&self) -> *mut ::ffi::udev {
