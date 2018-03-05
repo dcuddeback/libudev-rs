@@ -35,13 +35,13 @@ impl Context {
     ///
     /// The `syspath` parameter should be a path to the device file within the `sysfs` file system,
     /// e.g., `/sys/devices/virtual/tty/tty0`.
-    pub fn device_from_syspath(&self, syspath: &Path) -> ::Result<Device> {
+    pub fn device_from_syspath<'a>(&'a self, syspath: &Path) -> ::Result<Device<'a>> {
         let syspath = try!(::util::os_str_to_cstring(syspath));
 
         let ptr = try_alloc!(unsafe {
             ::ffi::udev_device_new_from_syspath(self.udev, syspath.as_ptr())
         });
 
-        Ok(::device::new(self, ptr))
+        Ok(::device::new(ptr))
     }
 }

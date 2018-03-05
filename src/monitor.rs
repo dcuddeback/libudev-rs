@@ -126,7 +126,7 @@ impl<'a> MonitorSocket<'a> {
             None
         }
         else {
-            let device = ::device::new(self.inner.context, device);
+            let device = ::device::new(device);
 
             Some(Event { device: device })
         }

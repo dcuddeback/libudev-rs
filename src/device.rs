@@ -10,7 +10,7 @@ use libc::{c_char,dev_t};
 use ::context::Context;
 use ::handle::*;
 
-pub fn new<'a>(_context: &'a Context, device: *mut ::ffi::udev_device) -> Device<'a> {
+pub fn new<'a>(device: *mut ::ffi::udev_device) -> Device<'a> {
     Device {
         context: PhantomData,
         device: device,
