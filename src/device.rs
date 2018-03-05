@@ -252,7 +252,8 @@ impl<'a> Iterator for Properties<'a> {
     fn next(&mut self) -> Option<Property<'a>> {
         if self.entry.is_null() {
             None
-        } else {
+        }
+        else {
             let name = unsafe { ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_name(self.entry)) };
             let value = unsafe { ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_value(self.entry)) };
 
