@@ -12,15 +12,15 @@ use ::handle::*;
 
 pub fn new<'a>(_context: &'a Context, device: *mut ::ffi::udev_device) -> Device<'a> {
     Device {
+        context: PhantomData,
         device: device,
-        phantom: PhantomData,
     }
 }
 
 /// A structure that provides access to sysfs/kernel devices.
 pub struct Device<'a> {
+    context: PhantomData<&'a Context>,
     device: *mut ::ffi::udev_device,
-    phantom: PhantomData<&'a ()>,
 }
 
 impl<'a> Drop for Device<'a> {
@@ -102,8 +102,8 @@ impl<'a> Device<'a> {
             }
 
             Some(Device {
+                context: PhantomData,
                 device: ptr,
-                phantom: PhantomData,
             })
         }
         else {
@@ -212,8 +212,8 @@ impl<'a> Device<'a> {
     /// ```
     pub fn properties(&self) -> Properties {
         Properties {
+            device: PhantomData,
             entry: unsafe { ::ffi::udev_device_get_properties_list_entry(self.device) },
-            phantom: PhantomData,
         }
     }
 
@@ -242,8 +242,8 @@ impl<'a> Device<'a> {
 
 /// Iterator over a device's properties.
 pub struct Properties<'a> {
+    device: PhantomData<&'a Device<'a>>,
     entry: *mut ::ffi::udev_list_entry,
-    phantom: PhantomData<&'a ()>,
 }
 
 impl<'a> Iterator for Properties<'a> {
