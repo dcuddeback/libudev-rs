@@ -4,11 +4,11 @@ use std::ptr;
 use std::ffi::{CString,OsStr};
 use std::ops::Deref;
 use std::os::unix::io::{RawFd,AsRawFd};
+use std::marker::PhantomData;
 
 use ::context::{Context};
 use ::device::{Device};
 use ::handle::prelude::*;
-
 
 /// Monitors for device events.
 ///
@@ -16,7 +16,7 @@ use ::handle::prelude::*;
 /// in the kernel, and only events that match the filters are received by the socket. Filters must
 /// be setup before listening for events.
 pub struct Monitor<'a> {
-    context: &'a Context,
+    context: PhantomData<&'a Context>,
     monitor: *mut ::ffi::udev_monitor
 }
 
@@ -38,7 +38,7 @@ impl<'a> Monitor<'a> {
         });
 
         Ok(Monitor {
-            context: context,
+            context: PhantomData,
             monitor: ptr
         })
     }
