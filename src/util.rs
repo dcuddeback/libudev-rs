@@ -1,9 +1,17 @@
 use std::slice;
 use std::ffi::{CString,OsStr};
+use std::path::Path;
 
 use ::libc::{c_int,c_char};
 
 use std::os::unix::prelude::*;
+
+pub fn ptr_to_path<'a>(ptr: *const c_char) -> Option<&'a Path> {
+    match ptr_to_os_str(ptr) {
+        Some(path) => Some(Path::new(path)),
+        None => None,
+    }
+}
 
 pub fn ptr_to_os_str<'a>(ptr: *const c_char) -> Option<&'a OsStr> {
     if !ptr.is_null() {
