@@ -65,9 +65,9 @@ impl<'a> Device<'a> {
     /// The path is an absolute path and includes the sys mount point. For example, the syspath for
     /// `tty0` could be `/sys/devices/virtual/tty/tty0`, which includes the sys mount point,
     /// `/sys`.
-    pub fn syspath(&self) -> &Path {
-        Path::new(unsafe {
-            ::util::ptr_to_os_str_unchecked(::ffi::udev_device_get_syspath(self.device))
+    pub fn syspath(&self) -> Option<&Path> {
+        ::util::ptr_to_os_str(unsafe { ::ffi::udev_device_get_syspath(self.device) }).map(|path| {
+            Path::new(path)
         })
     }
 
@@ -75,10 +75,8 @@ impl<'a> Device<'a> {
     ///
     /// The path does not contain the sys mount point, but does start with a `/`. For example, the
     /// devpath for `tty0` could be `/devices/virtual/tty/tty0`.
-    pub fn devpath(&self) -> &OsStr {
-        unsafe {
-            ::util::ptr_to_os_str_unchecked(::ffi::udev_device_get_devpath(self.device))
-        }
+    pub fn devpath(&self) -> Option<&OsStr> {
+        ::util::ptr_to_os_str(unsafe { ::ffi::udev_device_get_devpath(self.device) })
     }
 
     /// Returns the path to the device node belonging to the device.
@@ -123,10 +121,8 @@ impl<'a> Device<'a> {
     /// The sysname is a string that differentiates the device from others in the same subsystem.
     /// For example, `tty0` is the sysname for a TTY device that differentiates it from others,
     /// such as `tty1`.
-    pub fn sysname(&self) -> &OsStr {
-        unsafe {
-            ::util::ptr_to_os_str_unchecked(::ffi::udev_device_get_sysname(self.device))
-        }
+    pub fn sysname(&self) -> Option<&OsStr> {
+        ::util::ptr_to_os_str(unsafe { ::ffi::udev_device_get_sysname(self.device) })
     }
 
     /// Returns the instance number of the device.
