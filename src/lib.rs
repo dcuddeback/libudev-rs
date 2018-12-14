@@ -1,7 +1,6 @@
 extern crate libudev_sys as ffi;
 extern crate libc;
 
-pub use context::{Context};
 pub use device::{Device,Properties,Property,Attributes,Attribute};
 pub use enumerator::{Enumerator,Devices};
 pub use error::{Result,Error,ErrorKind};
@@ -19,7 +18,6 @@ macro_rules! try_alloc {
     }}
 }
 
-mod context;
 mod device;
 mod enumerator;
 mod error;

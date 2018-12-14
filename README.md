@@ -39,15 +39,13 @@ target-specific dependency:
 libudev = "0.2"
 ```
 
-Import the `libudev` crate. The starting point for nearly all `libudev` functionality is to create a
-context object.
+Import the `libudev` crate.
 
 ```rust
 extern crate libudev;
 
 fn main() {
-  let context = libudev::Context::new().unwrap();
-  let mut enumerator = libudev::Enumerator::new(&context).unwrap();
+  let mut enumerator = libudev::Enumerator::new().unwrap();
 
   enumerator.match_subsystem("tty").unwrap();
 

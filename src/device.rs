@@ -2,27 +2,25 @@ use std::str;
 
 use std::ffi::{CStr,OsStr};
 use std::path::Path;
+use std::ptr;
 use std::str::FromStr;
 
 use libc::{c_char,dev_t};
 
-use ::context::Context;
 use ::handle::*;
 
-pub fn new(context: &Context, device: *mut ::ffi::udev_device) -> Device {
+pub fn new(device: *mut ::ffi::udev_device) -> Device {
     Device {
-        _context: context,
         device: device,
     }
 }
 
 /// A structure that provides access to sysfs/kernel devices.
-pub struct Device<'a> {
-    _context: &'a Context,
+pub struct Device {
     device: *mut ::ffi::udev_device,
 }
 
-impl<'a> Drop for Device<'a> {
+impl<'a> Drop for Device {
     fn drop(&mut self) {
         unsafe {
             ::ffi::udev_device_unref(self.device);
@@ -31,13 +29,28 @@ impl<'a> Drop for Device<'a> {
 }
 
 #[doc(hidden)]
-impl<'a> Handle<::ffi::udev_device> for Device<'a> {
+impl<'a> Handle<::ffi::udev_device> for Device {
     fn as_ptr(&self) -> *mut ::ffi::udev_device {
         self.device
     }
 }
 
-impl<'a> Device<'a> {
+impl Device {
+
+    /// Creates a device for a given syspath.
+    ///
+    /// The `syspath` parameter should be a path to the device file within the `sysfs` file system,
+    /// e.g., `/sys/devices/virtual/tty/tty0`.
+    pub fn from_syspath(syspath: &Path) -> ::Result<Device> {
+        let syspath = try!(::util::os_str_to_cstring(syspath));
+
+        let ptr = try_alloc!(unsafe {
+            ::ffi::udev_device_new_from_syspath(ptr::null_mut(), syspath.as_ptr())
+        });
+
+        Ok(::device::new(ptr))
+    }
+
     /// Checks whether the device has already been handled by udev.
     ///
     /// When a new device is connected to the system, udev initializes the device by setting
@@ -101,7 +114,6 @@ impl<'a> Device<'a> {
             }
 
             Some(Device {
-                _context: self._context,
                 device: ptr,
             })
         }
@@ -203,8 +215,7 @@ impl<'a> Device<'a> {
     ///
     /// ```no_run
     /// # use std::path::Path;
-    /// # let mut context = libudev::Context::new().unwrap();
-    /// # let device = context.device_from_syspath(Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
+    /// # let device = libudev::Device::from_syspath(Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
     /// for property in device.properties() {
     ///     println!("{:?} = {:?}", property.name(), property.value());
     /// }
@@ -224,8 +235,7 @@ impl<'a> Device<'a> {
     ///
     /// ```no_run
     /// # use std::path::Path;
-    /// # let mut context = libudev::Context::new().unwrap();
-    /// # let device = context.device_from_syspath(Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
+    /// # let device = libudev::Device::from_syspath(Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
     /// for attribute in device.attributes() {
     ///     println!("{:?} = {:?}", attribute.name(), attribute.value());
     /// }
@@ -241,7 +251,7 @@ impl<'a> Device<'a> {
 
 /// Iterator over a device's properties.
 pub struct Properties<'a> {
-    _device: &'a Device<'a>,
+    _device: &'a Device,
     entry: *mut ::ffi::udev_list_entry
 }
 
@@ -291,7 +301,7 @@ impl<'a> Property<'a> {
 
 /// Iterator over a device's attributes.
 pub struct Attributes<'a> {
-    device: &'a Device<'a>,
+    device: &'a Device,
     entry: *mut ::ffi::udev_list_entry
 }
 
@@ -321,7 +331,7 @@ impl<'a> Iterator for Attributes<'a> {
 
 /// A device attribute.
 pub struct Attribute<'a> {
-    device: &'a Device<'a>,
+    device: &'a Device,
     name: &'a OsStr
 }
 

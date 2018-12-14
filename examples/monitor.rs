@@ -32,12 +32,11 @@ extern "C" {
 }
 
 fn main() {
-    let context = libudev::Context::new().unwrap();
-    monitor(&context).unwrap();
+    monitor().unwrap();
 }
 
-fn monitor(context: &libudev::Context) -> io::Result<()> {
-    let mut monitor = try!(libudev::Monitor::new(&context));
+fn monitor() -> io::Result<()> {
+    let mut monitor = try!(libudev::Monitor::new());
 
     try!(monitor.match_subsystem_devtype("usb", "usb_device"));
     let mut socket = try!(monitor.listen());
