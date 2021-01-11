@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ptr;
 
-use std::ffi::{CString,OsStr};
+use std::ffi::OsStr;
 use std::ops::Deref;
 use std::os::unix::io::{RawFd,AsRawFd};
 
@@ -33,11 +33,9 @@ impl Drop for Monitor {
 impl Monitor {
     /// Creates a new `Monitor`.
     pub fn new(context: &Context) -> ::Result<Self> {
-        let name = CString::new("udev").unwrap();
-
         unsafe {
             let ptr = try_alloc!(
-                ::ffi::udev_monitor_new_from_netlink(context.as_ptr(), name.as_ptr())
+                ::ffi::udev_monitor_new_from_netlink(context.as_ptr(), b"udev\0".as_ptr() as *mut _)
             );
 
             ::ffi::udev_ref(context.as_ptr());
