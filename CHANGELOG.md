@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.3.0 (TBA)
+## 0.3.0 (2020-01-17)
 
 This release changes the resource management strategy. Tracking lifetimes of dependent resources
 makes for a less-ergonomic API. That has been replaced with reference-counting. There are no known
