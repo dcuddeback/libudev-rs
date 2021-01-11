@@ -52,6 +52,8 @@ impl Context {
             ::ffi::udev_device_new_from_syspath(self.udev, syspath.as_ptr())
         });
 
-        Ok(::device::new(self.clone(), ptr))
+        Ok(unsafe {
+            ::device::from_raw(ptr)
+        })
     }
 }

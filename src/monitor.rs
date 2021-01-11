@@ -16,31 +16,34 @@ use ::handle::prelude::*;
 /// in the kernel, and only events that match the filters are received by the socket. Filters must
 /// be setup before listening for events.
 pub struct Monitor {
-    context: Context,
-    monitor: *mut ::ffi::udev_monitor
+    monitor: *mut ::ffi::udev_monitor,
 }
 
 impl Drop for Monitor {
     fn drop(&mut self) {
         unsafe {
+            let udev = ::ffi::udev_monitor_get_udev(self.monitor);
+
             ::ffi::udev_monitor_unref(self.monitor);
+            ::ffi::udev_unref(udev);
         }
     }
 }
 
 impl Monitor {
     /// Creates a new `Monitor`.
-    pub fn new(context: Context) -> ::Result<Self> {
+    pub fn new(context: &Context) -> ::Result<Self> {
         let name = CString::new("udev").unwrap();
 
-        let ptr = try_alloc!(unsafe {
-            ::ffi::udev_monitor_new_from_netlink(context.as_ptr(), name.as_ptr())
-        });
+        unsafe {
+            let ptr = try_alloc!(
+                ::ffi::udev_monitor_new_from_netlink(context.as_ptr(), name.as_ptr())
+            );
 
-        Ok(Monitor {
-            context: context,
-            monitor: ptr
-        })
+            ::ffi::udev_ref(context.as_ptr());
+
+            Ok(Monitor { monitor: ptr })
+        }
     }
 
     /// Adds a filter that matches events for devices with the given subsystem.
@@ -126,7 +129,9 @@ impl MonitorSocket {
             None
         }
         else {
-            let device = ::device::new(self.inner.context.clone(), device);
+            let device = unsafe {
+                ::device::from_raw(device)
+            };
 
             Some(Event { device: device })
         }

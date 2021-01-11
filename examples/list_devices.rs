@@ -8,7 +8,7 @@ fn main() {
 }
 
 fn list_devices(context: &libudev::Context) -> io::Result<()> {
-    let mut enumerator = try!(libudev::Enumerator::new(context.clone()));
+    let mut enumerator = try!(libudev::Enumerator::new(&context));
 
     for device in try!(enumerator.scan_devices()) {
         println!("");

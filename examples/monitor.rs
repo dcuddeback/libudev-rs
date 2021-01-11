@@ -37,7 +37,7 @@ fn main() {
 }
 
 fn monitor(context: &libudev::Context) -> io::Result<()> {
-    let mut monitor = try!(libudev::Monitor::new(context.clone()));
+    let mut monitor = try!(libudev::Monitor::new(context));
 
     try!(monitor.match_subsystem_devtype("usb", "usb_device"));
     let mut socket = try!(monitor.listen());

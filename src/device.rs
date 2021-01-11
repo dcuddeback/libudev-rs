@@ -6,26 +6,28 @@ use std::str::FromStr;
 
 use libc::{c_char,dev_t};
 
-use ::context::Context;
 use ::handle::*;
 
-pub fn new(context: Context, device: *mut ::ffi::udev_device) -> Device {
-    Device {
-        _context: context,
-        device: device,
-    }
+
+pub unsafe fn from_raw(device: *mut ::ffi::udev_device) -> Device {
+    ::ffi::udev_ref(::ffi::udev_device_get_udev(device));
+
+    Device { device: device }
 }
+
 
 /// A structure that provides access to sysfs/kernel devices.
 pub struct Device {
-    _context: Context,
     device: *mut ::ffi::udev_device,
 }
 
 impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
+            let udev = ::ffi::udev_device_get_udev(self.device);
+
             ::ffi::udev_device_unref(self.device);
+            ::ffi::udev_unref(udev);
         }
     }
 }
@@ -98,12 +100,9 @@ impl Device {
         if !ptr.is_null() {
             unsafe {
                 ::ffi::udev_device_ref(ptr);
-            }
 
-            Some(Device {
-                _context: self._context.clone(),
-                device: ptr,
-            })
+                Some(from_raw(ptr))
+            }
         }
         else {
             None

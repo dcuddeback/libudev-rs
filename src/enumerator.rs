@@ -1,4 +1,5 @@
 use std::ffi::{OsStr};
+use std::marker::PhantomData;
 use std::path::Path;
 
 use ::handle::prelude::*;
@@ -13,25 +14,32 @@ pub use device::{Device};
 /// by calling its `match_*` and `nomatch_*` methods. After the filters are setup, the
 /// `scan_devices()` method finds devices in `/sys` that match the filters.
 pub struct Enumerator {
-    context: Context,
-    enumerator: *mut ::ffi::udev_enumerate
+    enumerator: *mut ::ffi::udev_enumerate,
 }
 
 impl Drop for Enumerator {
     fn drop(&mut self) {
-        unsafe { ::ffi::udev_enumerate_unref(self.enumerator) };
+        unsafe {
+            let udev = ::ffi::udev_enumerate_get_udev(self.enumerator);
+
+            ::ffi::udev_enumerate_unref(self.enumerator);
+            ::ffi::udev_unref(udev);
+        };
     }
 }
 
 impl Enumerator {
     /// Creates a new Enumerator.
-    pub fn new(context: Context) -> ::Result<Self> {
-        let ptr = try_alloc!(unsafe { ::ffi::udev_enumerate_new(context.as_ptr()) });
+    pub fn new(context: &Context) -> ::Result<Self> {
+        unsafe {
+            let ptr = try_alloc!(
+                ::ffi::udev_enumerate_new(context.as_ptr())
+            );
 
-        Ok(Enumerator {
-            context: context,
-            enumerator: ptr
-        })
+            ::ffi::udev_ref(context.as_ptr());
+
+            Ok(Enumerator { enumerator: ptr })
+        }
     }
 
     /// Adds a filter that matches only initialized devices.
@@ -131,18 +139,22 @@ impl Enumerator {
             ::ffi::udev_enumerate_scan_devices(self.enumerator)
         }));
 
-        Ok(Devices {
-            enumerator: self,
-            entry: unsafe { ::ffi::udev_enumerate_get_list_entry(self.enumerator) }
-        })
+        unsafe {
+            Ok(Devices {
+                _enumerator: PhantomData,
+                udev: ::ffi::udev_enumerate_get_udev(self.enumerator),
+                entry: ::ffi::udev_enumerate_get_list_entry(self.enumerator),
+            })
+        }
     }
 }
 
 
 /// Iterator over devices.
 pub struct Devices<'a> {
-    enumerator: &'a Enumerator,
-    entry: *mut ::ffi::udev_list_entry
+    _enumerator: PhantomData<&'a Enumerator>,
+    udev: *mut ::ffi::udev,
+    entry: *mut ::ffi::udev_list_entry,
 }
 
 impl<'a> Iterator for Devices<'a> {
@@ -150,15 +162,19 @@ impl<'a> Iterator for Devices<'a> {
 
     fn next(&mut self) -> Option<Device> {
         while !self.entry.is_null() {
-            let syspath = Path::new(unsafe {
-                ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_name(self.entry))
-            });
+            unsafe {
+                let syspath = ::ffi::udev_list_entry_get_name(self.entry);
 
-            self.entry = unsafe { ::ffi::udev_list_entry_get_next(self.entry) };
+                self.entry = ::ffi::udev_list_entry_get_next(self.entry);
 
-            match self.enumerator.context.device_from_syspath(syspath) {
-                Ok(d) => return Some(d),
-                Err(_) => continue
+                let device = ::ffi::udev_device_new_from_syspath(self.udev, syspath);
+
+                if !device.is_null() {
+                    return Some(::device::from_raw(device));
+                }
+                else {
+                    continue;
+                }
             };
         }
 
