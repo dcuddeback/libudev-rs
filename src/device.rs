@@ -6,6 +6,7 @@ use std::str::FromStr;
 
 use libc::{c_char,dev_t};
 
+pub use context::{Context};
 use ::handle::*;
 
 
@@ -40,6 +41,20 @@ impl Handle<::ffi::udev_device> for Device {
 }
 
 impl Device {
+    /// Creates a device for a given syspath.
+    ///
+    /// The `syspath` parameter should be a path to the device file within the `sysfs` file system,
+    /// e.g., `/sys/devices/virtual/tty/tty0`.
+    pub fn from_syspath(context: &Context, syspath: &Path) -> ::Result<Self> {
+        let syspath = try!(::util::os_str_to_cstring(syspath));
+
+        Ok(unsafe {
+            from_raw(try_alloc!(
+                ::ffi::udev_device_new_from_syspath(context.as_ptr(), syspath.as_ptr())
+            ))
+        })
+    }
+
     /// Checks whether the device has already been handled by udev.
     ///
     /// When a new device is connected to the system, udev initializes the device by setting
@@ -203,7 +218,7 @@ impl Device {
     /// ```no_run
     /// # use std::path::Path;
     /// # let mut context = libudev::Context::new().unwrap();
-    /// # let device = context.device_from_syspath(Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
+    /// # let device = libudev::Device::from_syspath(&context, Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
     /// for property in device.properties() {
     ///     println!("{:?} = {:?}", property.name(), property.value());
     /// }
@@ -224,7 +239,7 @@ impl Device {
     /// ```no_run
     /// # use std::path::Path;
     /// # let mut context = libudev::Context::new().unwrap();
-    /// # let device = context.device_from_syspath(Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
+    /// # let device = libudev::Device::from_syspath(&context, Path::new("/sys/devices/virtual/tty/tty0")).unwrap();
     /// for attribute in device.attributes() {
     ///     println!("{:?} = {:?}", attribute.name(), attribute.value());
     /// }
