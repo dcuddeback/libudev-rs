@@ -1,6 +1,7 @@
 use std::str;
 
 use std::ffi::{CStr,OsStr};
+use std::marker::PhantomData;
 use std::path::Path;
 use std::str::FromStr;
 
@@ -225,8 +226,8 @@ impl Device {
     /// ```
     pub fn properties(&self) -> Properties {
         Properties {
-            _device: self,
-            entry: unsafe { ::ffi::udev_device_get_properties_list_entry(self.device) }
+            _device: PhantomData,
+            entry: unsafe { ::ffi::udev_device_get_properties_list_entry(self.device) },
         }
     }
 
@@ -255,8 +256,8 @@ impl Device {
 
 /// Iterator over a device's properties.
 pub struct Properties<'a> {
-    _device: &'a Device,
-    entry: *mut ::ffi::udev_list_entry
+    _device: PhantomData<&'a Device>,
+    entry: *mut ::ffi::udev_list_entry,
 }
 
 impl<'a> Iterator for Properties<'a> {
