@@ -1,8 +1,8 @@
 use std::slice;
-use std::ffi::{CString,OsStr};
+use std::ffi::{CString, OsStr};
 use std::path::Path;
 
-use ::libc::{c_int,c_char};
+use libc::{c_int, c_char};
 
 use std::os::unix::prelude::*;
 
@@ -33,7 +33,7 @@ pub unsafe fn ptr_to_os_str_unchecked<'a>(ptr: *const c_char) -> &'a OsStr {
 pub fn os_str_to_cstring<T: AsRef<OsStr>>(s: T) -> ::Result<CString> {
     match CString::new(s.as_ref().as_bytes()) {
         Ok(s) => Ok(s),
-        Err(_) => return Err(::error::from_errno(::libc::EINVAL))
+        Err(_) => return Err(::error::from_errno(::libc::EINVAL)),
     }
 }
 
@@ -41,6 +41,6 @@ pub fn os_str_to_cstring<T: AsRef<OsStr>>(s: T) -> ::Result<CString> {
 pub fn errno_to_result(errno: c_int) -> ::Result<()> {
     match errno {
         0 => Ok(()),
-        e => Err(::error::from_errno(e))
+        e => Err(::error::from_errno(e)),
     }
 }

@@ -6,7 +6,7 @@ use std::str;
 use std::error::Error as StdError;
 use std::result::Result as StdResult;
 
-use ::libc::c_int;
+use libc::c_int;
 
 /// A `Result` type for libudev operations.
 pub type Result<T> = StdResult<T,Error>;
@@ -16,7 +16,7 @@ pub type Result<T> = StdResult<T,Error>;
 pub enum ErrorKind {
     NoMem,
     InvalidInput,
-    Io(io::ErrorKind)
+    Io(io::ErrorKind),
 }
 
 /// The error type for libudev operations.

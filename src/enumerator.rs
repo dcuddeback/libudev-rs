@@ -1,11 +1,10 @@
-use std::ffi::{OsStr};
+use std::ffi::OsStr;
 use std::marker::PhantomData;
 use std::path::Path;
 
-use ::handle::prelude::*;
-
-pub use context::{Context};
-pub use device::{Device};
+use ::context::Context;
+use ::device::Device;
+use ::handle::Handle;
 
 
 /// An enumeration context.

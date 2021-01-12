@@ -6,9 +6,9 @@ use std::ptr;
 use std::thread;
 use std::time::Duration;
 
-use std::os::unix::io::{AsRawFd};
+use std::os::unix::io::AsRawFd;
 
-use libc::{c_void,c_int,c_short,c_ulong,timespec};
+use libc::{c_void, c_int, c_short, c_ulong, timespec};
 
 #[repr(C)]
 struct pollfd {
@@ -19,7 +19,7 @@ struct pollfd {
 
 #[repr(C)]
 struct sigset_t {
-    __private: c_void
+    __private: c_void,
 }
 
 #[allow(non_camel_case_types)]
@@ -56,7 +56,7 @@ fn monitor(context: &libudev::Context) -> io::Result<()> {
             None => {
                 thread::sleep(Duration::from_millis(10));
                 continue;
-            }
+            },
         };
 
         println!("{}: {} {} (subsystem={}, sysname={}, devtype={})",

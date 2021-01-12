@@ -3,11 +3,11 @@ use std::ptr;
 
 use std::ffi::OsStr;
 use std::ops::Deref;
-use std::os::unix::io::{RawFd,AsRawFd};
+use std::os::unix::io::{RawFd, AsRawFd};
 
-use ::context::{Context};
-use ::device::{Device};
-use ::handle::prelude::*;
+use ::context::Context;
+use ::device::Device;
+use ::handle::Handle;
 
 
 /// Monitors for device events.
@@ -101,7 +101,7 @@ impl Monitor {
 /// variant of `poll()` should be used on the file descriptor returned by the `AsRawFd` trait to
 /// wait for new events.
 pub struct MonitorSocket {
-    inner: Monitor
+    inner: Monitor,
 }
 
 /// Provides raw access to the monitor's socket.
@@ -123,15 +123,13 @@ impl MonitorSocket {
             ::ffi::udev_monitor_receive_device(self.inner.monitor)
         };
 
-        if device.is_null() {
-            None
+        if !device.is_null() {
+            Some(Event {
+                device: unsafe { ::device::from_raw(device) },
+            })
         }
         else {
-            let device = unsafe {
-                ::device::from_raw(device)
-            };
-
-            Some(Event { device: device })
+            None
         }
     }
 }
@@ -172,7 +170,7 @@ impl fmt::Display for EventType {
 
 /// An event that indicates a change in device state.
 pub struct Event {
-    device: Device
+    device: Device,
 }
 
 /// Provides access to the device associated with the event.
@@ -189,7 +187,7 @@ impl Event {
     pub fn event_type(&self) -> EventType {
         let value = match self.device.property_value("ACTION") {
             Some(s) => s.to_str(),
-            None => None
+            None => None,
         };
 
         match value {

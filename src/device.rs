@@ -1,14 +1,14 @@
 use std::str;
 
-use std::ffi::{CStr,OsStr};
+use std::ffi::{CStr, OsStr};
 use std::marker::PhantomData;
 use std::path::Path;
 use std::str::FromStr;
 
-use libc::{c_char,dev_t};
+use libc::{c_char, dev_t};
 
-pub use context::{Context};
-use ::handle::*;
+use ::context::Context;
+use ::handle::Handle;
 
 
 pub unsafe fn from_raw(device: *mut ::ffi::udev_device) -> Device {
@@ -74,7 +74,7 @@ impl Device {
     pub fn devnum(&self) -> Option<dev_t> {
         match unsafe { ::ffi::udev_device_get_devnum(self.device) } {
             0 => None,
-            n => Some(n)
+            n => Some(n),
         }
     }
 
@@ -130,7 +130,9 @@ impl Device {
     /// The subsystem name is a string that indicates which kernel subsystem the device belongs to.
     /// Examples of subsystem names are `tty`, `vtconsole`, `block`, `scsi`, and `net`.
     pub fn subsystem(&self) -> Option<&OsStr> {
-        ::util::ptr_to_os_str(unsafe { ::ffi::udev_device_get_subsystem(self.device) })
+        ::util::ptr_to_os_str(unsafe {
+            ::ffi::udev_device_get_subsystem(self.device)
+        })
     }
 
     /// Returns the kernel device name for the device.
@@ -157,8 +159,8 @@ impl Device {
 
         if !ptr.is_null() {
             match str::from_utf8(unsafe { CStr::from_ptr(ptr) }.to_bytes()) {
+                Ok(s) => FromStr::from_str(s).ok(),
                 Err(_) => None,
-                Ok(s) => FromStr::from_str(s).ok()
             }
         }
         else {
@@ -178,26 +180,27 @@ impl Device {
 
     /// Retrieves the value of a device property.
     pub fn property_value<T: AsRef<OsStr>>(&self, property: T) -> Option<&OsStr> {
-        let prop = match ::util::os_str_to_cstring(property) {
-            Ok(s) => s,
-            Err(_) => return None
-        };
+        match ::util::os_str_to_cstring(property) {
+            Ok(prop) => {
+                ::util::ptr_to_os_str(unsafe {
+                    ::ffi::udev_device_get_property_value(self.device, prop.as_ptr())
+                })
+            },
+            Err(_) => None,
+        }
 
-        ::util::ptr_to_os_str(unsafe {
-            ::ffi::udev_device_get_property_value(self.device, prop.as_ptr())
-        })
     }
 
     /// Retrieves the value of a device attribute.
     pub fn attribute_value<T: AsRef<OsStr>>(&self, attribute: T) -> Option<&OsStr> {
-        let attr = match ::util::os_str_to_cstring(attribute) {
-            Ok(s) => s,
-            Err(_) => return None
-        };
-
-        ::util::ptr_to_os_str(unsafe {
-            ::ffi::udev_device_get_sysattr_value(self.device, attr.as_ptr())
-        })
+        match ::util::os_str_to_cstring(attribute) {
+            Ok(attr) => {
+                ::util::ptr_to_os_str(unsafe {
+                    ::ffi::udev_device_get_sysattr_value(self.device, attr.as_ptr())
+                })
+            },
+            Err(_) => None,
+        }
     }
 
     /// Sets the value of a device attribute.
@@ -248,7 +251,7 @@ impl Device {
     pub fn attributes(&self) -> Attributes {
         Attributes {
             device: self,
-            entry: unsafe { ::ffi::udev_device_get_sysattr_list_entry(self.device) }
+            entry: unsafe { ::ffi::udev_device_get_sysattr_list_entry(self.device) },
         }
     }
 }
@@ -264,19 +267,21 @@ impl<'a> Iterator for Properties<'a> {
     type Item = Property<'a>;
 
     fn next(&mut self) -> Option<Property<'a>> {
-        if self.entry.is_null() {
-            None
+        if !self.entry.is_null() {
+            unsafe {
+                let name = ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_name(self.entry));
+                let value = ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_value(self.entry));
+
+                self.entry = ::ffi::udev_list_entry_get_next(self.entry);
+
+                Some(Property {
+                    name: name,
+                    value: value,
+                })
+            }
         }
         else {
-            let name = unsafe { ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_name(self.entry)) };
-            let value = unsafe { ::util::ptr_to_os_str_unchecked(::ffi::udev_list_entry_get_value(self.entry)) };
-
-            self.entry = unsafe { ::ffi::udev_list_entry_get_next(self.entry) };
-
-            Some(Property {
-                name: name,
-                value: value
-            })
+            None
         }
     }
 
@@ -288,7 +293,7 @@ impl<'a> Iterator for Properties<'a> {
 /// A device property.
 pub struct Property<'a> {
     name: &'a OsStr,
-    value: &'a OsStr
+    value: &'a OsStr,
 }
 
 impl<'a> Property<'a> {
@@ -307,7 +312,7 @@ impl<'a> Property<'a> {
 /// Iterator over a device's attributes.
 pub struct Attributes<'a> {
     device: &'a Device,
-    entry: *mut ::ffi::udev_list_entry
+    entry: *mut ::ffi::udev_list_entry,
 }
 
 impl<'a> Iterator for Attributes<'a> {
@@ -321,7 +326,7 @@ impl<'a> Iterator for Attributes<'a> {
 
             Some(Attribute {
                 device: self.device,
-                name: name
+                name: name,
             })
         }
         else {
@@ -337,7 +342,7 @@ impl<'a> Iterator for Attributes<'a> {
 /// A device attribute.
 pub struct Attribute<'a> {
     device: &'a Device,
-    name: &'a OsStr
+    name: &'a OsStr,
 }
 
 impl<'a> Attribute<'a> {

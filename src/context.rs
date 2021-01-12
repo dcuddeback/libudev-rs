@@ -1,8 +1,8 @@
-use ::handle::{Handle};
+use ::handle::Handle;
 
 /// A libudev context.
 pub struct Context {
-    udev: *mut ::ffi::udev
+    udev: *mut ::ffi::udev,
 }
 
 impl Clone for Context {
@@ -33,8 +33,8 @@ impl Handle<::ffi::udev> for Context {
 impl Context {
     /// Creates a new context.
     pub fn new() -> ::Result<Self> {
-        let ptr = try_alloc!(unsafe { ::ffi::udev_new() });
-
-        Ok(Context { udev: ptr })
+        Ok(Context {
+            udev: try_alloc!(unsafe { ::ffi::udev_new() }),
+        })
     }
 }
