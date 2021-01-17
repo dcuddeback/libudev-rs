@@ -12,3 +12,4 @@ before_install:
   - pkg-config --list-all
   - pkg-config --libs libudev
   - pkg-config --modversion libudev
+  - if [ -d "ci/$TRAVIS_RUST_VERSION" ]; then find "ci/$TRAVIS_RUST_VERSION" -mindepth 1 -maxdepth 1 -exec ln -s '{}' . \; ; fi
