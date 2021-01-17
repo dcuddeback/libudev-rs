@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Context","A libudev context."]]});

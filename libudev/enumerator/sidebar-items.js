@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Context","A libudev context."],["Device","A structure that provides access to sysfs/kernel devices."],["Devices","Iterator over devices."],["Enumerator","An enumeration context."]]});

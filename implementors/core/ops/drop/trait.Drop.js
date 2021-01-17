@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["libudev"] = [{"text":"impl Drop for Context","synthetic":false,"types":[]},{"text":"impl Drop for Device","synthetic":false,"types":[]},{"text":"impl Drop for Enumerator","synthetic":false,"types":[]},{"text":"impl Drop for Monitor","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["EventType","Types of events that can be received from udev."]],"struct":[["Event","An event that indicates a change in device state."],["Monitor","Monitors for device events."],["MonitorSocket","An active monitor that can receive events."]]});
